@@ -2,16 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIRECT | ADMIN HUB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DIRECT | ADMIN AUTH</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
     <style>
         :root {
-            --neon-red: #ff003c; 
-            --deep-black: #010101;
-            --active-green: #39ff14; /* New Green Color */
-            --dim-text: #888;
-            --searching-gold: #ffcc00;
+            --neon-main: #ff003c; 
+            --deep-black: #000000;
+            --glow: rgba(255, 0, 60, 0.5);
+            --success-green: #39ff14;
         }
 
         body {
@@ -19,182 +22,179 @@
             color: white;
             font-family: 'Orbitron', sans-serif;
             margin: 0;
-            padding: 30px;
-        }
-
-        .header {
-            text-align: left;
-            border-left: 4px solid var(--neon-red);
-            padding-left: 15px;
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            letter-spacing: 5px;
-            margin: 0;
-            color: var(--neon-red);
-            text-shadow: 0 0 10px rgba(255, 0, 60, 0.5);
-        }
-
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(255, 0, 60, 0.02);
-            border: 1px solid rgba(255, 0, 60, 0.1);
-        }
-
-        th {
-            text-align: left;
-            padding: 15px;
-            background: rgba(255, 0, 60, 0.05);
-            color: var(--neon-red);
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 2px solid rgba(255, 0, 60, 0.2);
-        }
-
-        td {
-            padding: 20px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.9rem;
-        }
-
-        .status-cell {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #444;
-            transition: 0.3s;
-        }
-
-        /* ONLINE GREEN STATE */
-        .active-mode .status-indicator {
-            background: var(--active-green);
-            box-shadow: 0 0 10px var(--active-green);
-        }
-
-        .searching-mode .status-indicator {
-            background: var(--searching-gold);
-            box-shadow: 0 0 10px var(--searching-gold);
-            animation: pulse 0.8s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-
-        input[type="checkbox"] {
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-            accent-color: var(--neon-red);
-        }
-
-        .battery-wrap {
-            width: 100px;
-            height: 12px;
-            background: #222;
-            border-radius: 3px;
+            justify-content: center;
+            height: 100vh;
             overflow: hidden;
-            border: 1px solid #444;
         }
 
-        .battery-level {
-            height: 100%;
-            background: linear-gradient(90deg, #550000, var(--neon-red));
-            transition: 0.5s;
+        body::before {
+            content: "";
+            position: absolute;
+            width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(rgba(255, 0, 60, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 60, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            transform: rotate(15deg);
+        }
+
+        .login-container {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .brand {
+            font-size: 3.5rem;
+            letter-spacing: 15px;
+            color: var(--neon-main);
+            text-shadow: 0 0 20px var(--glow);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .sub-brand {
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            color: white;
+            opacity: 0.7;
+            margin-bottom: 60px;
+            text-transform: uppercase;
+        }
+
+        .input-wrap {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .input-wrap label {
+            display: block;
+            font-size: 0.6rem;
+            color: var(--neon-main);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 0, 60, 0.2);
+            padding: 18px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            border-radius: 4px;
+        }
+
+        input:focus {
+            border-color: var(--neon-main);
+            box-shadow: 0 0 15px rgba(255, 0, 60, 0.2);
+        }
+
+        .btn-auth {
+            width: 100%;
+            background: var(--neon-main);
+            color: black;
+            border: none;
+            padding: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            cursor: pointer;
+            border-radius: 12px;
+            text-transform: uppercase;
+            box-shadow: 0 0 30px var(--glow);
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        #msg {
+            margin-top: 25px;
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            color: var(--neon-main);
+            height: 20px;
+            transition: color 0.3s ease;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>D.I.R.E.C.T ADMIN CONTROL</h1>
-        <p style="font-size: 0.7rem; color: var(--dim-text);">SATELLITE FLEET MANAGEMENT SYSTEM</p>
+    <div class="login-container" id="loginBox">
+        <h1 class="brand">D.I.R.E.C.T</h1>
+        <div class="sub-brand">Mobile Satellite Link</div>
+
+        <div class="input-wrap">
+            <label>Admin ID</label>
+            <input type="text" id="adminUser" placeholder="ENTER USERNAME" autocomplete="off">
+        </div>
+
+        <div class="input-wrap">
+            <label>Encryption Key</label>
+            <input type="password" id="adminPass" placeholder="••••••••" autocomplete="off">
+        </div>
+
+        <button class="btn-auth" onclick="validateAdmin()">Initialize</button>
+        
+        <div id="msg">SYSTEM READY</div>
     </div>
 
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>Serial No.</th>
-                <th>SIM Number</th>
-                <th>Tracking Target</th>
-                <th>Device Battery</th>
-                <th>Activation</th>
-                <th>Link Status</th>
-            </tr>
-        </thead>
-        <tbody id="device-list">
-            <tr class="row-highlight">
-                <td style="color: var(--dim-text);">#001</td>
-                <td id="admSim">FETCHING...</td>
-                <td id="admName">FETCHING...</td>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="battery-wrap"><div class="battery-level" id="batLevel" style="width: 0%"></div></div>
-                        <span id="batText" style="font-size: 0.7rem;">0%</span>
-                    </div>
-                </td>
-                <td>
-                    <input type="checkbox" id="activateCheck" onchange="handleSignal()">
-                </td>
-                <td>
-                    <div class="status-cell" id="statusBox">
-                        <div class="status-indicator"></div>
-                        <span id="statusLabel" style="color: var(--dim-text);">OFFLINE</span>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
     <script>
-        window.onload = function() {
-            const savedName = localStorage.getItem("childName");
-            const savedSim = localStorage.getItem("trackedSim");
-
-            document.getElementById('admName').innerText = savedName || "NO TARGET";
-            document.getElementById('admSim').innerText = savedSim || "NO SIM LINKED";
-
-            const randomBat = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
-            document.getElementById('batLevel').style.width = randomBat + "%";
-            document.getElementById('batText').innerText = randomBat + "%";
+        // 1. YOUR FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1yCdjdBKdbGQX8dkmr--bO2SZUNEBuf8",
+    authDomain: "direct-satellite.firebaseapp.com",
+    databaseURL: "https://direct-satellite-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "direct-satellite",
+    storageBucket: "direct-satellite.firebasestorage.app",
+    messagingSenderId: "1051037629964",
+    appId: "1:1051037629964:web:c0fa1d9d140443513d7829",
+    measurementId: "G-3NKZE9F1F1"
         };
+        
+        firebase.initializeApp(firebaseConfig);
 
-        function handleSignal() {
-            const isChecked = document.getElementById('activateCheck').checked;
-            const statusBox = document.getElementById('statusBox');
-            const label = document.getElementById('statusLabel');
+        async function validateAdmin() {
+            const username = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            const msg = document.getElementById('msg');
+            const loginBox = document.getElementById('loginBox');
 
-            if(isChecked) {
-                statusBox.classList.remove('active-mode');
-                statusBox.classList.add('searching-mode');
-                label.innerText = "SEARCHING...";
-                label.style.color = "var(--searching-gold)";
+            // Convert Username to Masked Email format
+            const maskedEmail = username + "@direct.io";
+
+            try {
+                // Attempting Backend Authorization
+                msg.innerText = "QUERYING SATELLITE NETWORK...";
+                
+                await firebase.auth().signInWithEmailAndPassword(maskedEmail, pass);
+
+                // On Success
+                msg.style.color = "var(--success-green)";
+                msg.innerText = "AUTHORIZATION GRANTED. DECRYPTING...";
+                document.querySelectorAll('input').forEach(i => i.disabled = true);
 
                 setTimeout(() => {
-                    if(document.getElementById('activateCheck').checked) {
-                        statusBox.classList.remove('searching-mode');
-                        statusBox.classList.add('active-mode');
-                        label.innerText = "ONLINE";
-                        label.style.color = "var(--active-green)"; // Text is now Green
-                    }
+                    window.location.href = "admin_hub.html"; 
                 }, 1500);
 
-            } else {
-                statusBox.classList.remove('active-mode', 'searching-mode');
-                label.innerText = "OFFLINE";
-                label.style.color = "var(--dim-text)";
+            } catch (error) {
+                // On Failure
+                msg.style.color = "var(--neon-main)";
+                msg.innerText = "ACCESS DENIED - UNKNOWN OPERATOR";
+                
+                // Shake Animation
+                loginBox.style.transform = "translateX(10px)";
+                setTimeout(() => { loginBox.style.transform = "translateX(0)"; }, 100);
+                console.error("Auth Error:", error.message);
             }
         }
     </script>
